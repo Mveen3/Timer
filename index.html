@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Multi Timer with Pomodoro (OLED-Friendly)</title>
+  <style>
+    body {
+      background-color: black;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      font-family: Arial, sans-serif;
+    }
+
+    .timer-container {
+      position: absolute; /* Will be moved around the screen */
+      text-align: center;
+      display: none;
+    }
+
+    .timer-display {
+      background-color: black;
+      color: red;
+      font-size: 48px;
+      font-weight: bold;
+      padding: 20px;
+      text-align: center;
+      margin: 10px;
+    }
+
+    .timer-label {
+      color: red;
+      font-size: 36px;
+      font-weight: bold;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .current-time {
+      color: red;
+      font-size: 18px;
+      font-weight: bold;
+      text-align: center;
+      margin-top: 10px;
+    }
+
+    .button-container {
+      margin-top: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .button-container button {
+      font-size: 20px;
+      font-weight: 600;
+      padding: 10px 20px;
+      color: white;
+      background-color: darkred;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      text-align: center;
+    }
+
+    .button-container button:hover {
+      background-color: crimson;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Timer Screens -->
+  <div id="pomodoroContainer" class="timer-container">
+    <div id="pomodoroLabel" class="timer-label"></div>
+    <div id="pomodoroTimer" class="timer-display">25:00</div>
+    <div id="currentTimePomodoro" class="current-time">00:00 AM/PM</div>
+  </div>
+
+  <div id="timer30Container" class="timer-container">
+    <div id="timer30" class="timer-display">00:30:00</div>
+    <div id="currentTime30" class="current-time">00:00 AM/PM</div>
+  </div>
+
+  <div id="timer60Container" class="timer-container">
+    <div id="timer60" class="timer-display">01:00:00</div>
+    <div id="currentTime60" class="current-time">00:00 AM/PM</div>
+  </div>
+
+  <div id="timer90Container" class="timer-container">
+    <div id="timer90" class="timer-display">01:30:00</div>
+    <div id="currentTime90" class="current-time">00:00 AM/PM</div>
+  </div>
+
+  <div id="timer120Container" class="timer-container">
+    <div id="timer120" class="timer-display">02:00:00</div>
+    <div id="currentTime120" class="current-time">00:00 AM/PM</div>
+  </div>
+
+  <div id="timer150Container" class="timer-container">
+    <div id="timer150" class="timer-display">02:30:00</div>
+    <div id="currentTime150" class="current-time">00:00 AM/PM</div>
+  </div>
+
+  <div id="timer180Container" class="timer-container">
+    <div id="timer180" class="timer-display">03:00:00</div>
+    <div id="currentTime180" class="current-time">00:00 AM/PM</div>
+  </div>
+
+  <!-- Timer Buttons -->
+  <div class="button-container">
+    <button onclick="startPomodoro()">POMODORO</button>
+    <button onclick="startTimer(30)">Start 30 Min Timer</button>
+    <button onclick="startTimer(60)">Start 60 Min Timer</button>
+    <button onclick="startTimer(90)">Start 90 Min Timer</button>
+    <button onclick="startTimer(120)">Start 120 Min Timer</button>
+    <button onclick="startTimer(150)">Start 150 Min Timer</button>
+    <button onclick="startTimer(180)">Start 180 Min Timer</button>
+  </div>
+
+  <script>
+    let countdownTime = 0;
+    let countdownInterval;
+    let pomodoroSession = 0;
+    let isPomodoroRunning = false;
+
+    const timers = {
+      30: 30 * 60,
+      60: 60 * 60,
+      90: 90 * 60,
+      120: 120 * 60,
+      150: 150 * 60, // 2:30 hours
+      180: 180 * 60  // 3:00 hours
+    };
+
+    function startTimer(duration) {
+      clearInterval(countdownInterval);
+      countdownTime = timers[duration];
+
+      // Hide buttons and show the selected timer container
+      document.querySelector('.button-container').style.display = 'none';
+      document.querySelectorAll('.timer-container').forEach(el => el.style.display = 'none');
+      document.getElementById(`timer${duration}Container`).style.display = 'block';
+
+      moveTimerRandomly(`timer${duration}Container`);
+      countdownInterval = setInterval(() => updateTimer(duration), 1000);
+    }
+
+    function updateTimer(duration) {
+      const timerElement = document.getElementById(`timer${duration}`);
+      const hours = Math.floor(countdownTime / 3600);
+      const minutes = Math.floor((countdownTime % 3600) / 60);
+      const seconds = countdownTime % 60;
+
+      // Format the time
+      const formattedTime = 
+        (hours < 10 ? '0' : '') + hours + ':' + 
+        (minutes < 10 ? '0' : '') + minutes + ':' + 
+        (seconds < 10 ? '0' : '') + seconds;
+
+      timerElement.textContent = formattedTime;
+
+      if (countdownTime <= 0) {
+        clearInterval(countdownInterval);
+        timerElement.textContent = '00:00:00';
+      }
+
+      countdownTime--;
+    }
+
+    function startPomodoro() {
+      if (isPomodoroRunning) return;
+
+      clearInterval(countdownInterval);
+      pomodoroSession = 0;
+      isPomodoroRunning = true;
+
+      document.querySelector('.button-container').style.display = 'none';
+      document.querySelectorAll('.timer-container').forEach(el => el.style.display = 'none');
+      document.getElementById('pomodoroContainer').style.display = 'block';
+
+      moveTimerRandomly('pomodoroContainer');
+      startPomodoroCycle();
+    }
+
+    function startPomodoroCycle() {
+      const POMODORO_TIME = 25 * 60;
+      const SHORT_BREAK_TIME = 5 * 60;
+      const LONG_BREAK_TIME = 15 * 60;
+
+      // Start Pomodoro with the session number displayed (e.g., POMODORO - 1)
+      startCountdown(POMODORO_TIME, `POMODORO - ${pomodoroSession + 1}`, () => {
+        // After Pomodoro, start short break
+        startCountdown(SHORT_BREAK_TIME, "BREAK", () => {
+          pomodoroSession++;
+          if (pomodoroSession < 4) {
+            startPomodoroCycle(); // Repeat Pomodoro cycle
+          } else {
+            // After 4 sessions, start long break
+            startCountdown(LONG_BREAK_TIME, "LONG BREAK", () => {
+              pomodoroSession = 0; // Reset after long break
+              startPomodoroCycle(); // Restart Pomodoro cycle
+            });
+          }
+        });
+      });
+    }
+
+    function startCountdown(duration, label, callback) {
+      countdownTime = duration;
+
+      // Set the label and timer immediately
+      document.getElementById('pomodoroLabel').textContent = label;
+      updatePomodoroTimer();
+
+      countdownInterval = setInterval(() => {
+        updatePomodoroTimer();
+        
+        if (countdownTime <= 0) {
+          clearInterval(countdownInterval);
+          callback();
+        }
+
+        countdownTime--;
+      }, 1000);
+    }
+
+    function updatePomodoroTimer() {
+      const minutes = Math.floor(countdownTime / 60);
+      const seconds = countdownTime % 60;
+
+      const formattedTime = 
+        (minutes < 10 ? '0' : '') + minutes + ':' + 
+        (seconds < 10 ? '0' : '') + seconds;
+
+      document.getElementById('pomodoroTimer').textContent = formattedTime;
+    }
+
+    function updateCurrentTime() {
+      const now = new Date();
+      let hours = now.getHours();
+      const minutes = now.getMinutes();
+      const ampm = hours >= 12 ? 'PM' : 'AM';
+
+      // Convert to 12-hour format
+      hours = hours % 12;
+      hours = hours ? hours : 12; // 0 should be 12
+
+      const formattedTime = 
+        (hours < 10 ? '0' : '') + hours + ':' + 
+        (minutes < 10 ? '0' : '') + minutes + ' ' + ampm;
+
+      // Update the current time on all screens
+      document.querySelectorAll('.current-time').forEach(el => el.textContent = formattedTime);
+    }
+
+    function moveTimerRandomly(containerId) {
+      const container = document.getElementById(containerId);
+      const maxX = window.innerWidth - container.offsetWidth;
+      const maxY = window.innerHeight - container.offsetHeight;
+
+      const randomX = Math.floor(Math.random() * maxX);
+      const randomY = Math.floor(Math.random() * maxY);
+
+      container.style.left = `${randomX}px`;
+      container.style.top = `${randomY}px`;
+
+      // Move the timer every 3 minutes (180000 ms)
+      setTimeout(() => moveTimerRandomly(containerId), 180000);
+    }
+
+    // Update current time every second
+    setInterval(updateCurrentTime, 1000);
+
+  </script>
+
+</body>
+</html>
