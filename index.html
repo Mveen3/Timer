@@ -197,13 +197,12 @@
         // After Pomodoro, start short break
         startCountdown(SHORT_BREAK_TIME, "BREAK", () => {
           pomodoroSession++;
-          if (pomodoroSession < 4) {
+          if (pomodoroSession%4!=0) {
             startPomodoroCycle(); // Repeat Pomodoro cycle
           } else {
-            // After 4 sessions, start long break
+            // After each 4 sessions, start long break
             startCountdown(LONG_BREAK_TIME, "LONG BREAK", () => {
-              pomodoroSession = 0; // Reset after long break
-              startPomodoroCycle(); // Restart Pomodoro cycle
+              startPomodoroCycle(); // Repeat Pomodoro cycle
             });
           }
         });
