@@ -149,7 +149,6 @@
     const startPomodoro = () => {
       if (isPomodoroRunning) return;
       isPomodoroRunning = true;
-      pomodoroSession = 1;
       document.querySelector('.button-container').style.display = 'none';
       document.getElementById('pomodoroContainer').style.display = 'block';
       moveTimerRandomly('pomodoroContainer');
